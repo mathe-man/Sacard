@@ -1,5 +1,5 @@
 
-namespace Sacard_PE;
+namespace Sacard_Utilities;
 
 
 
@@ -152,6 +152,13 @@ public class Vector2
     public Vector2 Normalized(double max) => this / max;
     public Vector2 Normalized(Vector2 vector2, double max) => this / max;
     
+    
+    //Conversion methods
     public string ToString(string separator = ";") => $"({X}{separator}{Y})";
     public static string ToString(Vector2 vector2, string separator = ";") => vector2.ToString(separator);
+    
+    public System.Numerics.Vector2 ToSystemVector2()  => new System.Numerics.Vector2(Convert.ToSingle(X), Convert.ToSingle(Y));
+    public static System.Numerics.Vector2 ToSystemVector2(Vector2 sacard_vector2)  => sacard_vector2.ToSystemVector2();
+    
+    public static Vector2 FromSystemVector2(System.Numerics.Vector2 system_vector2) => new (system_vector2.X, system_vector2.Y);
 }

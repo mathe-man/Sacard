@@ -1,14 +1,15 @@
 ﻿
-using Gtk;
-using Sacard_PE;
-using Sacard_Drawer;
 
+using Sacard_Drawer;
+using Sacard_Utilities;
 using Object = Sacard_PE.Object;
+
+namespace Sacard;
+
 
 // The Debug/Use entry point
 class Program
-{
-    private Window window;
+{/*
     public static List<Object> XList =
     [
         new(new (3, 4),  1, 100, Vector2.Zero, Vector2.Zero),
@@ -28,7 +29,7 @@ class Program
         new(new(-5, 0), 1, 10, Vector2.Zero, Vector2.Zero),
     ];
     public static Env simEnv = new Env("aa", 6.67E-11, 0, ZList);
-
+*/
 
     public static void Main()
     {
@@ -36,25 +37,11 @@ class Program
         //MesuredSimulation(120_000);
         //MesuredSimulation(30_000);
         //LoopSimulation();
-        Application.Init();
-
-        // Création de la fenêtre
-        DrawerWindow fenetre = new DrawerWindow();
-        
-
-        // Ajout de quelques cercles avec des propriétés (x, y, rayon, r, g, b)
-        fenetre.SetCircle(100, 100, 50, 1.0, 0.0, 0.0);   // Cercle rouge
-        fenetre.SetCircle(200, 150, 30, 0.0, 1.0, 0.0);   // Cercle vert
-        fenetre.SetCircle(150, 200, 40, 0.0, 0.0, 1.0);   // Cercle bleu
-
-        // Rafraîchit la fenêtre pour afficher les nouveaux cercles
-        fenetre.UpdateWindow();
-
-        // Lance la boucle principale GTK
-        Application.Run();
-        Console.WriteLine("End");
+        SacardDrawer drawer1 = new SacardDrawer(400, 400, 60, "1"); drawer1.Start();
+        SacardDrawer drawer2 = new SacardDrawer(400, 400, 60, "2"); drawer2.Start();
+        SacardDrawer drawer3 = new SacardDrawer(400, 400, 60, "3"); drawer3.Start();
     }
-
+/*
     public static void LoopSimulation()
     {
         bool end = false;
@@ -108,28 +95,5 @@ class Program
     
     public static List<Object> simObjs;
     public static bool collided = false;
-    
-    public static void SacardPEInterface()
-    {
-        Timer refresh = new Timer(refreshDrawer, "Yep", 400, 100);
-
-        while (true)
-        {
-            simObjs = simEnv.Update(ref  collided, null);
-        }
-        
-    }
-
-    public static void refreshDrawer(object? o)
-    {
-        Console.Clear();
-        Console.WriteLine("Sacard PE Interface");
-        Console.WriteLine($"-----------{collided}-----------");
-        Console.WriteLine(Vector2.DistanceDoubleBetween(simObjs[0].Position, simObjs[1].Position));
-        Console.WriteLine("----------------------------------");
-        Console.WriteLine(simObjs[0].Position.ToString());
-        Console.WriteLine(simObjs[1].Position.ToString());
-        
-        
-    }
+    */
 }

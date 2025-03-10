@@ -5,11 +5,12 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>Program</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Sacard Drawer\Sacard Drawer.csproj" />
-        <ProjectReference Include="..\Sacard PE\Sacard PE.csproj" />
+      <ProjectReference Include="..\Sacard Drawer\Sacard Drawer.csproj" />
+      <ProjectReference Include="..\Sacard PE\Sacard PE.csproj" />
     </ItemGroup>
 
 </Project>

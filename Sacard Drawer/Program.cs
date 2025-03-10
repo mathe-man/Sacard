@@ -18,7 +18,7 @@ class Program
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.RayWhite);
 
-            // Dessiner un cercle qui suit la souris
+            //   Dessiner un cercle qui suit la souris
             Raylib.DrawCircleV(mousePos, 20, Color.Red);
 
             // Affichage des infos

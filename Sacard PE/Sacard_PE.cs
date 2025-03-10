@@ -1,5 +1,6 @@
 using System.Security.AccessControl;
-using Vector2 = Sacard_PE.Vector2;
+using Sacard;
+using Vector2 = Sacard.Vector2;
 
 namespace Sacard_PE;
 
