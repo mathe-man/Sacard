@@ -26,42 +26,41 @@ public class Env
     
     
     //Update every object in the env and return the actual list 
-    public List<Object> Update(ref bool collided, Action<Object> debugAction = null)
+    public List<Object> Update(Action<Object> debugAction = null)
     {
-        Vector2 vector = Vector2.Zero;   //define local variable to calculate the gravitationnal force
-        double x;
-        
+        //Calculate the force and the velocity of each objects
         foreach (Object objx in Objects)
         {
-            objx.Velocity += objx.Force / objx.Mass;
-            objx.Velocity -= AirResistance;
+            double Force;   //Force in N
+            Vector2 ForceVec = Vector2.Zero;
+            
             
             objx.Force = Vector2.Zero;
             foreach (Object objy in Objects)
             {
                 if (objy != objx)
                 {
-                    // Gravitationnal force law:  F = G * (M1 * Mx) /D (1, x)
-    
-                    //vector = GravitationalConstant * objx.Mass * objy.Mass *
-                    //    Vector2.DistanceVectorBetween(objx.Position, objy.Position);
+                    double r = Vector2.DistanceDoubleBetween(objx.Position, objy.Position);
+                    // Using the universal law of gravitation
+                    Force = GravitationalConstant * (objx.Mass * objy.Mass) / r*r;
+                    ForceVec.X = Force * (objx.Position.X / objy.Position.X) / r;
+                    ForceVec.Y = Force * (objx.Position.Y / objy.Position.Y) / r;
                     
-                    objx.Force += vector;
+                    objx.Force += ForceVec;
                 }
+
             }
+            objx.Force /= Objects.Count - 1;
             
             
-            foreach (Object objy in Objects)
-            {
-                if (objx != objy && objx.IsCollide(objy.Position, objy.Radius))
-                {
-                    collided = true;
-                }
-            }
+            objx.Velocity.X = ForceVec.X/objx.Mass;
+            objx.Velocity.Y = ForceVec.Y/objx.Mass;
             
             if(debugAction != null){debugAction.Invoke(objx);}
         }
 
+        //Update the position of each object
+        //It need to be make after the force calculation to avoid error in synchronisation
         foreach (Object obj in Objects)
         {
             obj.Position += obj.Velocity;

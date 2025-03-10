@@ -19,7 +19,7 @@ class Program
             Raylib.ClearBackground(Color.RayWhite);
 
             // Dessiner un cercle qui suit la souris
-            Raylib.DrawCircleV(mousePos, 50, Color.Red);
+            Raylib.DrawCircleV(mousePos, 20, Color.Red);
 
             // Affichage des infos
             Raylib.DrawText("Déplace la souris !", 10, 10, 20, Color.DarkGray);
@@ -27,6 +27,7 @@ class Program
             // Fin du rendu
             Raylib.EndDrawing();
         }
+
         // Fermeture de la fenêtre
         Raylib.CloseWindow();
     }
