@@ -1,33 +1,33 @@
-using System;
-using Gtk;
-using Cairo;
+using Raylib_cs;  // Import de Raylib-cs
+using System.Numerics;
 
 class Program
 {
     static void Main()
     {
-        Application.Init();
+        // Initialisation de la fenêtre
+        Raylib.InitWindow(800, 600, "Raylib-cs Example");
+        Raylib.SetTargetFPS(60);
 
-        Window window = new Window("Dessiner des formes avec GTK#");
-        window.SetDefaultSize(400, 300);
-        window.DeleteEvent += delegate { Application.Quit(); };
-
-        DrawingArea drawingArea = new DrawingArea();
-        drawingArea.Drawn += OnDrawn;
-        window.Add(drawingArea);
-
-        window.ShowAll();
-        Application.Run();
-    }
-
-    static void OnDrawn(object sender, DrawnArgs args)
-    {
-        DrawingArea area = (DrawingArea)sender;
-        using (Context cr = args.Cr)
+        while (!Raylib.WindowShouldClose())  // Boucle principale
         {
-            cr.SetSourceRGB(0.2, 0.3, 0.8);
-            cr.Arc(200, 150, 100, 0, 2 * Math.PI);
-            cr.Fill();
+            // Récupération de la position de la souris
+            Vector2 mousePos = Raylib.GetMousePosition();
+
+            // Début du rendu
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Color.RayWhite);
+
+            // Dessiner un cercle qui suit la souris
+            Raylib.DrawCircleV(mousePos, 50, Color.Red);
+
+            // Affichage des infos
+            Raylib.DrawText("Déplace la souris !", 10, 10, 20, Color.DarkGray);
+
+            // Fin du rendu
+            Raylib.EndDrawing();
         }
+        // Fermeture de la fenêtre
+        Raylib.CloseWindow();
     }
 }
