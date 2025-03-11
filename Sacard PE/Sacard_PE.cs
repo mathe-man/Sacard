@@ -1,6 +1,6 @@
 using System.Security.AccessControl;
-using Sacard;
-using Vector2 = Sacard.Vector2;
+
+using Vector2 = Sacard_Utilities.Vector2;
 
 namespace Sacard_PE;
 
@@ -41,21 +41,30 @@ public class Env
             {
                 if (objy != objx)
                 {
-                    double r = Vector2.DistanceDoubleBetween(objx.Position, objy.Position);
+                    double dx = objy.Position.X - objx.Position.X;
+                    double dy = objy.Position.Y - objx.Position.Y;
+                    double d = Math.Sqrt(dx * dx + dy * dy);
+                    
                     // Using the universal law of gravitation
-                    Force = GravitationalConstant * (objx.Mass * objy.Mass) / r*r;
-                    ForceVec.X = Force * (objx.Position.X / objy.Position.X) / r;
-                    ForceVec.Y = Force * (objx.Position.Y / objy.Position.Y) / r;
+                    Force = GravitationalConstant * (objx.Mass * objy.Mass) / (d * d);
+                    ForceVec.X = Force * (dx / d);
+                    ForceVec.Y = Force * (dy / d);
                     
                     objx.Force += ForceVec;
                 }
-
+                
             }
-            objx.Force /= Objects.Count - 1;
+            objx.Force /= Objects.Count;
             
+            objx.Velocity.X = ForceVec.X /objx.Mass; 
+            objx.Velocity.Y = ForceVec.Y /objx.Mass;
             
-            objx.Velocity.X = ForceVec.X/objx.Mass;
-            objx.Velocity.Y = ForceVec.Y/objx.Mass;
+            Console.WriteLine("Velocity etape 1:" + objx.Velocity.ToString());
+            
+            objx.Velocity.X = Double.IsNaN(objx.Velocity.X) ? 0 : objx.Velocity.X;
+            objx.Velocity.Y = Double.IsNaN(objx.Velocity.Y) ? 0 : objx.Velocity.Y;
+            
+            Console.WriteLine("Velocity etape 2:" + objx.Velocity.ToString());
             
             if(debugAction != null){debugAction.Invoke(objx);}
         }
@@ -64,6 +73,7 @@ public class Env
         //It need to be make after the force calculation to avoid error in synchronisation
         foreach (Object obj in Objects)
         {
+            Console.WriteLine("Velocity etape 3:" + obj.Velocity.ToString());
             obj.Position += obj.Velocity;
         }
         

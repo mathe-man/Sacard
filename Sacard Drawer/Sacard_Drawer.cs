@@ -6,9 +6,13 @@ namespace Sacard_Drawer;
 
 public class SacardDrawer
 {
-    public List<Object> Objects = new List<Object>();
+    public List<Circle> Circles = new List<Circle>();
     
     public string Title = "Sacard Drawer";
+
+    public Action FirstLoopAction;
+    public Action LastLoopAction;       
+    public Action WindowCloseAction;
     
 
     public SacardDrawer(int width, int height, int fpsRate = 60, string title = "Sacard Drawer")
@@ -21,22 +25,26 @@ public class SacardDrawer
     {
         while (!Raylib.WindowShouldClose())  // Boucle principale
         {
-            // Récupération de la position de la souris
-            Vector2 mousePos = Vector2.FromSystemVector2(Raylib.GetMousePosition());
-
-            // Début du rendu
+            if(FirstLoopAction != null){FirstLoopAction();}
+            
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.RayWhite);
+            string message = "Circle drawed: ";
 
-            // Dessiner un cercle qui suit la souris
-            Raylib.DrawCircleV(mousePos.ToSystemVector2(), 20, Color.Red);
-
-            // Affichage des infos
-            Raylib.DrawText("Déplace la souris !", 10, 10, 20, Color.DarkGray);
-
-            // Fin du rendu
+            foreach (Circle c in Circles)
+            {
+                Raylib.DrawCircle((int)(Math.Round(c.Position.X * 10) + 720/2), (int)(Math.Round(c.Position.Y * 10) + 520/2), (int)c.Radius, Color.Orange);
+                message += c.Position.ToString();
+            }
+            Console.WriteLine(message);
             Raylib.EndDrawing();
+            
+            if(LastLoopAction != null){LastLoopAction();}
         }
+        
+        if(WindowCloseAction != null){WindowCloseAction();}
+
+        Raylib.CloseWindow();
     }
 }
 
