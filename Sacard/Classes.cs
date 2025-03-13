@@ -34,6 +34,12 @@ public class Vector2
         Y = all;
     }
 
+    public Vector2(System.Numerics.Vector2 systemVector2)
+    {
+        X = systemVector2.X;
+        Y = systemVector2.Y;
+    }
+
     
 
     public static Vector2 DistanceVectorBetween(Vector2 a, Vector2 b)
@@ -103,6 +109,7 @@ public class Vector2
     
     public static bool operator <=(Vector2 a, Vector2 b) => a.Average() <= b.Average();
     public static bool operator >=(Vector2 a, Vector2 b) => a.Average() >= b.Average();
+    
 
     public bool Equals(Vector2 o) => X.Equals(o.Y) && Y.Equals(o.X);
     public static bool Equals(Vector2 a, Vector2 b) => a.Equals(b);
@@ -163,7 +170,7 @@ public class Vector2
     public System.Numerics.Vector2 ToSystemVector2()  => new System.Numerics.Vector2(Convert.ToSingle(X), Convert.ToSingle(Y));
     public static System.Numerics.Vector2 ToSystemVector2(Vector2 sacardVector2)  => sacardVector2.ToSystemVector2();
     
-    public static Vector2 FromSystemVector2(System.Numerics.Vector2 systemVector2) => new (systemVector2.X, systemVector2.Y);
+    public static Vector2 FromSystemVector2(System.Numerics.Vector2 systemVector2) => new (systemVector2);
 }
 
 
@@ -171,11 +178,11 @@ public class Vector2
 public class Object
 {
     // This use metrics system and I highly recommend to use meters(m) and kg or other proportionnal unit (like cm with g)
-    private Vector2 position;
+    private Vector2 _position = Vector2.Zero;
     public Vector2 Position
     {
-        get { return position; }
-        set{LastPosition = Position; position = value;}
+        get { return _position; }
+        set{LastPosition = Position; _position = value;}
     }
     public Vector2 LastPosition { get; set; }
     public double Radius { get; set; }
@@ -186,6 +193,8 @@ public class Object
     
     public Color Color { get; set; }
 
+    //Constructors:
+        //Main constructor
     public Object(Vector2 position, double radius,double mass, Vector2 velocity, Vector2 force, Color color)
     {
         if (radius == 0 || mass == 0)
@@ -195,7 +204,7 @@ public class Object
         }
         
         Position = position;
-        LastPosition = position;
+        LastPosition = Position;
         Radius   = radius;
         Velocity = velocity;
         Force    = force;
@@ -203,6 +212,47 @@ public class Object
         Color = color;
     }
 
+        //Constructor without Vector2 in parameters
+    public Object(double x, double y, double radius, double mass, Vector2 velocity, Vector2 force, Color color)
+    {
+        if (radius == 0 || mass == 0)
+        {
+            throw new ArgumentException(
+                $"Radius and Mass can't be 0, it will cause critical error in Velocity and Force calculations.\nYou can use 1 instead");
+        }
+        
+        Position = new (x, y);
+        LastPosition = Position;
+        Radius   = radius;
+        Velocity = velocity;
+        Force    = force;
+        Mass     = mass;
+        Color = color;
+    }
+
+        //Constructor with a ConstructorDictionary : each parameter needed for the construction is in the dictionnay
+    public Object(Dictionary<string, object> constructorDictionary)
+    {
+        Dictionary<string, object> cd = constructorDictionary; //Give a shorter name
+        foreach (var key in cd.Keys)
+        {
+            Console.Write($"|{key}:{cd[key]}|");
+        }
+        Console.WriteLine("");
+        Position = new((double)cd["x"],          (double)cd["y"]);
+        Velocity = new((double)cd["velocity_x"], (double)cd["velocity_y"]);
+        Force    = new((double)cd["force_x"],    (double)cd["force_y"]);
+        
+        LastPosition = Position;
+        
+        Radius   = (double)cd["radius"];
+        Mass     = (double)cd["mass"];
+  
+        Color    = new Color((int)Convert.ToInt64(cd["color_r"]), (int)Convert.ToInt64(cd["color_g"]), (int)Convert.ToInt64(cd["color_b"]));
+        
+    }
+    
+    
     public bool IsCollide(Object other) =>
         Position.DistanceDoubleTo(other.Position) <= other.Radius + Radius;
 
@@ -212,6 +262,26 @@ public class Object
         return text;
     }
     public static string ToString(Object a) => a.ToString();
+
+    public Dictionary<string, object> ToConstructorDictionary()
+    {
+        Dictionary<string, object> constructorDictionary = new Dictionary<string, object>();
+        
+        constructorDictionary["x"] = Position.X;
+        constructorDictionary["y"] = Position.Y;
+        constructorDictionary["velocity_x"] =  Velocity.X;
+        constructorDictionary["velocity_y"] =  Velocity.Y;
+        constructorDictionary["force_x"] = Force.X;
+        constructorDictionary["force_y"] = Force.Y;
+        
+            
+        constructorDictionary["radius"] = Radius;
+        constructorDictionary["mass"] = Mass;
+        constructorDictionary["color_r"] = Convert.ToInt64(Color.R);
+        constructorDictionary["color_g"] = Convert.ToInt64(Color.G);
+        constructorDictionary["color_b"] = Convert.ToInt64(Color.B);
+        return constructorDictionary;
+    }
 }
 
 

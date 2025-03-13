@@ -49,8 +49,8 @@ public static class SacardDrawer
             Raylib.ClearBackground(Color.RayWhite);
             
             
-            Stopwatch  stopwatch = new Stopwatch(); // Debugging/optimizing drawing
-            stopwatch.Start();
+            //Stopwatch  stopwatch = new Stopwatch(); // Debugging/optimizing drawing
+            //stopwatch.Start();
             
             foreach (var obj in objects)
             {
@@ -69,9 +69,9 @@ public static class SacardDrawer
             }
             Raylib.DrawCircleLines(0, 0, 3, Color.Black);
             
-            stopwatch.Stop();   //Debug end
-            Console.Clear();
-            Console.WriteLine(stopwatch.Elapsed);   //Give the result
+            //stopwatch.Stop();   //Debug end
+            //Console.Clear();
+            //Console.WriteLine(stopwatch.Elapsed);   //Give the result
             
             Raylib.EndMode2D();
             Raylib.EndDrawing();
