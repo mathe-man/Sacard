@@ -4,13 +4,13 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        
         <Nullable>enable</Nullable>
         <RootNamespace>Program</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Sacard Drawer\Sacard Drawer.csproj" />
-      <ProjectReference Include="..\Sacard PE\Sacard PE.csproj" />
+      <PackageReference Include="Raylib-cs" Version="7.0.1" />
     </ItemGroup>
 
 </Project>

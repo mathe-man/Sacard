@@ -1,5 +1,7 @@
 
-namespace Sacard_Utilities;
+using Raylib_cs;
+
+namespace Sacard;
 
 
 
@@ -158,7 +160,50 @@ public class Vector2
     public static string ToString(Vector2 vector2, string separator = ";") => vector2.ToString(separator);
     
     public System.Numerics.Vector2 ToSystemVector2()  => new System.Numerics.Vector2(Convert.ToSingle(X), Convert.ToSingle(Y));
-    public static System.Numerics.Vector2 ToSystemVector2(Vector2 sacard_vector2)  => sacard_vector2.ToSystemVector2();
+    public static System.Numerics.Vector2 ToSystemVector2(Vector2 sacardVector2)  => sacardVector2.ToSystemVector2();
     
-    public static Vector2 FromSystemVector2(System.Numerics.Vector2 system_vector2) => new (system_vector2.X, system_vector2.Y);
+    public static Vector2 FromSystemVector2(System.Numerics.Vector2 systemVector2) => new (systemVector2.X, systemVector2.Y);
 }
+
+
+
+public class Object
+{
+    // This use metrics system and I highly recommend to use meters(m) and kg or other proportionnal unit (like cm with g)
+    public Vector2 Position { get; set; }
+    public double Radius { get; set; }
+    public double Mass { get; set; }
+    public Vector2 Velocity { get; set; }
+    //The force applied to the object in N
+    public Vector2 Force { get; set; }
+    
+    public Color Color { get; set; }
+
+    public Object(Vector2 position, double radius,double mass, Vector2 velocity, Vector2 force, Color color)
+    {
+        if (radius == 0 || mass == 0)
+        {
+            throw new ArgumentException(
+                $"Radius and Mass can't be 0, it will cause critical error in Velocity and Force calculations.\nYou can use 1 instead");
+        }
+        
+        Position = position;
+        Radius   = radius;
+        Velocity = velocity;
+        Force    = force;
+        Mass     = mass;
+        Color = color;
+    }
+
+    public bool IsCollide(Object other) =>
+        Position.DistanceDoubleTo(other.Position) <= other.Radius + Radius;
+
+    public string ToString(string separator = ";")
+    {
+        string text = $"[position={Position.ToString()}{separator}velocity={Velocity.ToString()}{separator}force={Force.ToString()}{separator}{Mass}]";
+        return text;
+    }
+    public static string ToString(Object a) => a.ToString();
+}
+
+
