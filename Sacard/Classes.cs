@@ -1,5 +1,6 @@
 
 using Raylib_cs;
+using Newtonsoft.Json;
 
 namespace Sacard;
 
@@ -170,7 +171,13 @@ public class Vector2
 public class Object
 {
     // This use metrics system and I highly recommend to use meters(m) and kg or other proportionnal unit (like cm with g)
-    public Vector2 Position { get; set; }
+    private Vector2 position;
+    public Vector2 Position
+    {
+        get { return position; }
+        set{LastPosition = Position; position = value;}
+    }
+    public Vector2 LastPosition { get; set; }
     public double Radius { get; set; }
     public double Mass { get; set; }
     public Vector2 Velocity { get; set; }
@@ -188,6 +195,7 @@ public class Object
         }
         
         Position = position;
+        LastPosition = position;
         Radius   = radius;
         Velocity = velocity;
         Force    = force;
@@ -207,3 +215,40 @@ public class Object
 }
 
 
+
+public class JsonFiles
+{
+    public static T LoadFromFile<T>(string fileName)
+    {
+        // Read the file content to a variable
+        string jsonString = File.ReadAllText(fileName);
+        // Deserialize the content
+        return JsonConvert.DeserializeObject<T>(jsonString);
+    }
+    
+    
+    public static void SaveToFile<T>(T content, string filePath)
+    {
+        try
+        {
+            if (File.Exists(filePath))  //Only appen when the file is already existent
+            {
+                // Serialize the content into Json format
+                string jsonString = JsonConvert.SerializeObject(content, Formatting.Indented);
+                // Write the json formated content in the specified file
+                File.WriteAllText(filePath, jsonString);
+            }
+            else                        // if the file doesn't exist, it will be created and the function are recalled
+            {
+                FileStream fs = File.Create(filePath);
+                fs.Close();
+                SaveToFile<T>(content, filePath);
+            }
+        }
+        catch (DirectoryNotFoundException)
+        {
+            Directory.CreateDirectory(filePath.Remove(filePath.LastIndexOf("/")));
+            SaveToFile<T>(content, filePath);
+        }
+    }
+}

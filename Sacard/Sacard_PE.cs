@@ -48,7 +48,7 @@ public class Env
                             Console.WriteLine("Collision");
                             acceleration = objy.Velocity / objx.Mass;
                             objx.Mass += objy.Mass;
-                            objx.Radius += objy.Radius;
+                            objx.Radius += Math.Sqrt(objy.Radius);
                             objx.Position += objx.Position.DistanceVectorTo(objy.Position)/2; 
                             toRemove.Add(Objects.IndexOf(objy));
                         }
@@ -78,8 +78,6 @@ public class Env
                             
                         }
                     }
-
-                    
                 }
             
             
