@@ -288,6 +288,7 @@ public class Object
 
 public class JsonFiles
 {
+    //Basic json de/serialisation and load/save
     public static T LoadFromFile<T>(string fileName)
     {
         // Read the file content to a variable
@@ -295,8 +296,6 @@ public class JsonFiles
         // Deserialize the content
         return JsonConvert.DeserializeObject<T>(jsonString);
     }
-    
-    
     public static void SaveToFile<T>(T content, string filePath)
     {
         try
@@ -321,4 +320,85 @@ public class JsonFiles
             SaveToFile<T>(content, filePath);
         }
     }
+    
+    
+    public static List<Object> LoadObjectsFromFile(string? filePath = null)
+    {
+        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the json file contening your objects:\n"); filePath = Console.ReadLine();}
+        
+        
+        List<Dictionary<string, object>> construtors = JsonFiles.LoadFromFile<List<Dictionary<string, object>>>(filePath);
+
+        List<Object> objects = new List<Object>();
+        foreach (var dic in construtors)
+        {
+            objects.Add(new Object(dic));
+        }
+        
+        return objects;
+    }
+
+    public static void SaveObjectsToFile(List<Object> objectList, string? filePath = null)
+    {
+        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the file directory to save objects:\n"); filePath = Console.ReadLine();}
+        
+        
+        List<Dictionary<string, object>> construtors = new();
+
+        foreach (var obj in objectList)
+        {
+            construtors.Add(obj.ToConstructorDictionary());
+        }
+        
+        JsonFiles.SaveToFile(construtors, filePath);
+    }
+
+    public static void SaveEnvToFile(Env env, string? filePath = null)
+    {
+        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the save file directory to save environment:\n"); filePath = Console.ReadLine();}
+
+        
+        Dictionary<string, object> envConstructor = new();
+        envConstructor["name"] = env.Name;
+        envConstructor["GravitationalConstant"] = env.GravitationalConstant;
+        envConstructor["AirResistance"] = env.AirResistance;
+        if (env.Objects.Count > 0)
+        {
+            envConstructor["objects"] = $"Objects-{filePath}";
+            SaveObjectsToFile(env.Objects,$"Objects-{filePath}");
+        }
+
+        
+        SaveToFile(envConstructor, filePath);
+    }
+
+    public static Env LoadEnvFromFile(string? filePath = null)
+    {
+        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the json file contening your environment:\n"); filePath = Console.ReadLine();}
+
+        Dictionary<string, object> envConstructor = LoadFromFile<Dictionary<string, object>>(filePath);
+        List<Object> objects;
+        
+        if (envConstructor.ContainsKey("objects"))
+        {
+           objects = LoadObjectsFromFile((string)envConstructor["objects"]);
+        }
+        else
+        {
+            objects = LoadObjectsFromFile();
+        }
+
+        foreach (var Value in envConstructor)
+        {
+            Console.WriteLine(Value.Key + "=" + Value.Value);
+        }
+        
+        Env env = new((string)envConstructor["name"], (double)envConstructor["GravitationalConstant"], (double)envConstructor["AirResistance"], objects);
+        return env;
+    }
+    
 }

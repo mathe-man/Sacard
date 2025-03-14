@@ -25,27 +25,36 @@ class Program
     //Line
     public static List<Object> ListZ =
     [
-        new(new(200, 0), 10, 10000, new (0, 0.1), Vector2.Zero, Color.Green),
-        new(new(-100, 0), 20, 100000, Vector2.Zero, Vector2.Zero, Color.Red),
+        new(new(200, 0), 10, 1E8, new (0, 0.1), Vector2.Zero, Color.Green),
+        new(new(-100, 0), 20, 1E12, Vector2.Zero, Vector2.Zero, Color.Red),
     ];
-    //Orbital
+    //Dual Orbital
     public static List<Object> ListA =
     [
-        new(new(100, 5), 18, 1E13, new (0, 0.1), Vector2.Zero, Color.Violet),
-        new(new(-100, 5), 18, 1E13, new(0, -0.1), Vector2.Zero, Color.Magenta),
+        new(new(100, 5), 18, 1E12, new (0, 0.4), Vector2.Zero, Color.Violet),
+        new(new(-100, 5), 18, 1E12, new(0, -0.4), Vector2.Zero, Color.Magenta),
+    ];
+    //Orbital Earth/Moon
+    public static List<Object> Earth =
+    [
+        //Earth - 1km = X * 1000000 / 2000
+        new(new(0, 0), 30, 5.9724E24, new(0, 0), new(0, 0), Color.Blue),
+        new(new (0.4055E6, 0), 10, 0.07346E24, new(0, 1.082), new(0, 0), Color.DarkGray)
     ];
 
-    public static Env simEnv = new Env("Env", 6.67E-11, 0, ListA);//LoadObjectsFromFile("ListA.json")
-
+    public static Env simEnv;
     public static void Main()
     {
-        SaveObjectsToFile(ListX, "ListX.json");
-        SaveObjectsToFile(ListY, "ListY.json");
-        SaveObjectsToFile(ListZ, "ListZ.json");
-        SaveObjectsToFile(ListA, "ListA.json");
+        JsonFiles.SaveObjectsToFile(ListX, "ListX.objs");
+        JsonFiles.SaveObjectsToFile(ListY, "ListY.objs");
+        JsonFiles.SaveObjectsToFile(ListZ, "ListZ.objs");
+        JsonFiles.SaveObjectsToFile(ListA, "ListA.objs");
+        JsonFiles.SaveObjectsToFile(Earth, "Earth.objs");
         
-        
-        //DebugGravitation();
+        Console.Clear();
+        Console.WriteLine("Sacard Physic Engine\n");
+
+        simEnv = JsonFiles.LoadEnvFromFile("Default.json");
         Sacard_Interface();
     }
 
@@ -79,6 +88,7 @@ class Program
         foreach (Object obj in simEnv.Update())
         {
             SacardDrawer.objects.Add(obj);
+            //SacardDrawer.objects.Add(new (obj.Position / 1000000, obj.Radius, obj.Mass, obj.Velocity, obj.Force, obj.Color));
         }
         
 
@@ -86,35 +96,5 @@ class Program
     }
 
 
-    public static List<Object> LoadObjectsFromFile(string? path = null)
-    {
-        Console.Clear();
-        Console.WriteLine("Sacard Physic Engine\n");
-        
-        if (path == null)   //Ask the file path if it is not gived in parameters
-        {Console.WriteLine("Enter the json file contening your objects:\n"); path = Console.ReadLine();}
-        
-        List<Dictionary<string, object>> construtors = JsonFiles.LoadFromFile<List<Dictionary<string, object>>>(path);
-
-        List<Object> objects = new List<Object>();
-        foreach (var dic in construtors)
-        {
-            objects.Add(new Object(dic));
-        }
-        
-        return objects;
-    }
-
-    public static void SaveObjectsToFile(List<Object> objectList, string path)
-    {
-        List<Dictionary<string, object>> construtors = new();
-
-        foreach (var obj in objectList)
-        {
-            construtors.Add(obj.ToConstructorDictionary());
-        }
-        
-        JsonFiles.SaveToFile(construtors, path);
-    }
 }
 

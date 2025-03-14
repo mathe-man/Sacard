@@ -11,12 +11,12 @@ public class Env
     public List<Object> Objects;
     
 
-    public Env(string name, double G, double airResistance, List<Object> objects)
+    public Env(string name, double gravitationalConstant, double airResistance, List<Object> objects)
     {
         
         Name = name;
         
-        GravitationalConstant = G;
+        GravitationalConstant = gravitationalConstant;
         AirResistance = airResistance;
         Objects = objects == null ? new List<Object>() : objects;
         
@@ -46,11 +46,14 @@ public class Env
                         if (objx.IsCollide(objy))
                         {
                             Console.WriteLine("Collision");
-                            acceleration = objy.Velocity / objx.Mass;
-                            objx.Mass += objy.Mass;
-                            objx.Radius += Math.Sqrt(objy.Radius);
-                            objx.Position += objx.Position.DistanceVectorTo(objy.Position)/2; 
-                            toRemove.Add(Objects.IndexOf(objy));
+                            if (objx.Mass > objy.Mass)
+                            {
+                                objx.Mass += objy.Mass;
+                                acceleration = (objy.Velocity - objx.Velocity) / objx.Mass;
+                                objx.Radius += Math.Sqrt(objy.Radius);
+                                //objx.Position += objx.Position.DistanceVectorTo(objy.Position)/2; 
+                                toRemove.Add(Objects.IndexOf(objy));
+                            }
                         }
                         else
                         {

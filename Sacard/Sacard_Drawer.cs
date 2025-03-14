@@ -65,6 +65,7 @@ public static class SacardDrawer
                                   $"V:({Math.Round(obj.Velocity.X, 3)} ; {Math.Round(obj.Velocity.Y, 3)}) \n" +
                                   $"R:{Math.Round(obj.Radius, 3)} ; M:{Math.Round(obj.Mass, 3)}; I:{objects.IndexOf(obj)}";
                     Raylib.DrawText(info, textpositionX, textpositionY, (int)Math.Floor(obj.Radius / 3), obj.Color);
+                    //Console.WriteLine(info);
                 }
             }
             Raylib.DrawCircleLines(0, 0, 3, Color.Black);
