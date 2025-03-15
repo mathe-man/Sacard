@@ -366,7 +366,6 @@ public class JsonFiles
         envConstructor["name"] = env.Name;
         envConstructor["GravitationalConstant"] = env.GravitationalConstant;
         envConstructor["AirResistance"] = env.AirResistance;
-        envConstructor["Collide"] = env.Collide;
 
         if (env.Objects == null)
         {
@@ -404,15 +403,24 @@ public class JsonFiles
             {
                 objects = new List<Object>();
             }
+            else if (File.Exists((string)envConstructor["objects"]))
+            {
+                objects = LoadObjectsFromFile();
+            }
+            else if (!File.Exists((string)envConstructor["objects"]))
+            {
+                throw new FileNotFoundException($"File {(string)envConstructor["objects"]} not found.");
+            }
             else
             {
-                throw new JsonException("Environment file doesn't specifie the 'objects' property correctly.");
+                throw new JsonException($"Environment file doesn't specifie the 'objects' property correctly.");
             }
         }
         else
         {
-            objects = LoadObjectsFromFile();
+            throw new KeyNotFoundException($"File {(string)envConstructor["objects"]} doesn't contain the 'objects' property which is requiered.");
         }
+        
 
         foreach (var Value in envConstructor)
         {
@@ -420,7 +428,7 @@ public class JsonFiles
         }
         
         Env env = new((string)envConstructor["name"], (double)envConstructor["GravitationalConstant"],
-            (double)envConstructor["AirResistance"], objects, (bool)envConstructor["Collide"]);
+            (double)envConstructor["AirResistance"], objects);
         return env;
     }
     

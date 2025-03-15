@@ -90,7 +90,6 @@ class Program
         }
 
         environement.Objects = objs;
-
         Sacard_Interface();
     }
 
