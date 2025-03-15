@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
 using Raylib_cs;
+
 
 namespace Sacard;
 
@@ -42,10 +46,10 @@ class Program
         new(new (0.4055E6, 0), 10, 0.07346E24, new(0, 1.082), new(0, 0), Color.DarkGray)
     ];
 
-    public static Env environement;
-    public static void Main()
+    private static Env? environement;
+    public static void Main(string[] args)
     {
-        
+        Console.WriteLine();
         //Config verification
         if (!File.Exists("config.json"))
         {
@@ -58,12 +62,45 @@ class Program
             Init();
         }
 
+        if (args.Contains("config"))
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Process.Start("start", "config.json");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Process.Start("open", "config.json");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Process.Start("xdg-open", "config.json");
+            }
+            else
+            {
+                Console.WriteLine("Unrecognized OS");
+                
+            }
+            Console.WriteLine("Configuration file path:");
+            Console.WriteLine(Directory.GetCurrentDirectory() + "/config.json");
+            
+            return;
+        }
+        
         
         //Start the program with the specified configuration
         Dictionary<string, string> config = JsonFiles.LoadFromFile<Dictionary<string, string>>("config.json");
         
             //Env configuration
-        if (config["useDefaultEnvironment"] == "true")
+        if (args.Contains("-e"))
+        {
+            if (args.Length <= args.ToList().IndexOf("-e") +1)
+            {
+                throw new ArgumentException("Argument -e must be followed by the environment file path.");
+            }
+            environement = JsonFiles.LoadEnvFromFile(args[args.ToList().IndexOf("-e") + 1]);
+        }
+        else if (config["useDefaultEnvironment"] == "true")
         {
             Console.WriteLine("DefEnv: True - " + config["defaultEnvironment"]);
             environement = JsonFiles.LoadEnvFromFile(config["defaultEnvironment"]);
@@ -77,7 +114,16 @@ class Program
         
             //Objects configuration
         List<Object> objs = new();
-        if (config["useDefaultObjects"] == "true")
+        if (args.Contains("-o"))
+        {
+            if (args.Length <= args.ToList().IndexOf("-o") + 1)
+            {
+                throw new ArgumentException("Argument -o must be followed by the objects file path.");
+            }
+
+            objs = JsonFiles.LoadObjectsFromFile(args[args.ToList().IndexOf("-o") + 1]);
+        }
+        else if (config["useDefaultObjects"] == "true")
         {
             Console.WriteLine("DefObjs: True");
             objs = JsonFiles.LoadObjectsFromFile(config["defaultObjects"]);
