@@ -7,11 +7,13 @@ public class Env
     public string Name;                 //Name of the env
     public double GravitationalConstant;//G
     public double AirResistance;        //AirResistance is subtracted of the velocity at each update
+
+    public bool Collide = false;
     
     public List<Object> Objects;
     
 
-    public Env(string name, double gravitationalConstant, double airResistance, List<Object> objects)
+    public Env(string name, double gravitationalConstant, double airResistance, List<Object> objects, bool collide = false)
     {
         
         Name = name;
@@ -20,7 +22,9 @@ public class Env
         AirResistance = airResistance;
         Objects = objects == null ? new List<Object>() : objects;
         
-        Console.WriteLine($"Environment '{Name}' initialized with g={GravitationalConstant}, AirResistance={AirResistance} and {Objects.Count} objects");
+        Collide = collide;
+        
+        Console.WriteLine($"Environment '{Name}' initialized with g={GravitationalConstant}, AirResistance={AirResistance}, {Objects.Count} objects and  collide={Collide}");
     }
     
     
@@ -45,7 +49,6 @@ public class Env
                     {
                         if (objx.IsCollide(objy))
                         {
-                            Console.WriteLine("Collision");
                             if (objx.Mass > objy.Mass)
                             {
                                 objx.Mass += objy.Mass;

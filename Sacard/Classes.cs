@@ -1,6 +1,7 @@
 
 using Raylib_cs;
 using Newtonsoft.Json;
+using JsonException = System.Text.Json.JsonException;
 
 namespace Sacard;
 
@@ -311,7 +312,7 @@ public class JsonFiles
             {
                 FileStream fs = File.Create(filePath);
                 fs.Close();
-                SaveToFile<T>(content, filePath);
+                SaveToFile(content, filePath);
             }
         }
         catch (DirectoryNotFoundException)
@@ -327,8 +328,8 @@ public class JsonFiles
         if (filePath == null)   //Ask the file path if it is not gived in parameters
         {Console.WriteLine("Enter the json file contening your objects:\n"); filePath = Console.ReadLine();}
         
-        
-        List<Dictionary<string, object>> construtors = JsonFiles.LoadFromFile<List<Dictionary<string, object>>>(filePath);
+        Console.WriteLine(filePath);
+        List<Dictionary<string, object>> construtors =  LoadFromFile<List<Dictionary<string, object>>>(filePath);
 
         List<Object> objects = new List<Object>();
         foreach (var dic in construtors)
@@ -365,10 +366,20 @@ public class JsonFiles
         envConstructor["name"] = env.Name;
         envConstructor["GravitationalConstant"] = env.GravitationalConstant;
         envConstructor["AirResistance"] = env.AirResistance;
-        if (env.Objects.Count > 0)
+        envConstructor["Collide"] = env.Collide;
+
+        if (env.Objects == null)
+        {
+            envConstructor["objects"] = "null";
+        }
+        else if (env.Objects.Count > 0)
         {
             envConstructor["objects"] = $"Objects-{filePath}";
             SaveObjectsToFile(env.Objects,$"Objects-{filePath}");
+        }
+        else
+        {
+            envConstructor["objects"] = "new";
         }
 
         
@@ -385,7 +396,18 @@ public class JsonFiles
         
         if (envConstructor.ContainsKey("objects"))
         {
-           objects = LoadObjectsFromFile((string)envConstructor["objects"]);
+            if ((string)envConstructor["objects"] == "null")
+            {
+                objects = null;
+            }
+            else if ((string)envConstructor["objects"] == "new")
+            {
+                objects = new List<Object>();
+            }
+            else
+            {
+                throw new JsonException("Environment file doesn't specifie the 'objects' property correctly.");
+            }
         }
         else
         {
@@ -397,7 +419,8 @@ public class JsonFiles
             Console.WriteLine(Value.Key + "=" + Value.Value);
         }
         
-        Env env = new((string)envConstructor["name"], (double)envConstructor["GravitationalConstant"], (double)envConstructor["AirResistance"], objects);
+        Env env = new((string)envConstructor["name"], (double)envConstructor["GravitationalConstant"],
+            (double)envConstructor["AirResistance"], objects, (bool)envConstructor["Collide"]);
         return env;
     }
     
