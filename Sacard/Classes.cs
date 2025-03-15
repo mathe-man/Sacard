@@ -1,4 +1,5 @@
 
+using System.Data;
 using Raylib_cs;
 using Newtonsoft.Json;
 using JsonException = System.Text.Json.JsonException;
@@ -102,8 +103,8 @@ public class Vector2
     public static Vector2 Divide(Vector2 a, double b) => a / b;
 
     
-    public static bool operator ==(Vector2 a, Vector2 b) => a.Equals(b);
-    public static bool operator !=(Vector2 a, Vector2 b) => !a.Equals(b);
+    public static bool operator ==(Vector2 a, Vector2 b) => System.Object.Equals(a, b);
+    public static bool operator !=(Vector2 a, Vector2 b) => !System.Object.Equals(a, b);
     
     public static bool operator <(Vector2 a, Vector2 b) => a.Average() < b.Average();
     public static bool operator >(Vector2 a, Vector2 b) => a.Average() > b.Average();
@@ -112,8 +113,8 @@ public class Vector2
     public static bool operator >=(Vector2 a, Vector2 b) => a.Average() >= b.Average();
     
 
-    public bool Equals(Vector2 o) => X.Equals(o.Y) && Y.Equals(o.X);
-    public static bool Equals(Vector2 a, Vector2 b) => a.Equals(b);
+    public bool Equal(Vector2 o) => X.Equals(o.Y) && Y.Equals(o.X);
+    public static bool Equals(Vector2 a, Vector2 b) => a.Equal(b);
 
     // The hash code is thr hash code of the average of the vector.
     public override int GetHashCode() => this.Average().GetHashCode();
@@ -179,13 +180,7 @@ public class Vector2
 public class Object
 {
     // This use metrics system and I highly recommend to use meters(m) and kg or other proportionnal unit (like cm with g)
-    private Vector2 _position = Vector2.Zero;
-    public Vector2 Position
-    {
-        get { return _position; }
-        set{LastPosition = Position; _position = value;}
-    }
-    public Vector2 LastPosition { get; set; }
+    public Vector2 Position { get; set; }
     public double Radius { get; set; }
     public double Mass { get; set; }
     public Vector2 Velocity { get; set; }
@@ -205,7 +200,6 @@ public class Object
         }
         
         Position = position;
-        LastPosition = Position;
         Radius   = radius;
         Velocity = velocity;
         Force    = force;
@@ -223,7 +217,6 @@ public class Object
         }
         
         Position = new (x, y);
-        LastPosition = Position;
         Radius   = radius;
         Velocity = velocity;
         Force    = force;
@@ -244,7 +237,6 @@ public class Object
         Velocity = new((double)cd["velocity_x"], (double)cd["velocity_y"]);
         Force    = new((double)cd["force_x"],    (double)cd["force_y"]);
         
-        LastPosition = Position;
         
         Radius   = (double)cd["radius"];
         Mass     = (double)cd["mass"];
@@ -295,7 +287,13 @@ public class JsonFiles
         // Read the file content to a variable
         string jsonString = File.ReadAllText(fileName);
         // Deserialize the content
-        return JsonConvert.DeserializeObject<T>(jsonString);
+        T? value = JsonConvert.DeserializeObject<T>(jsonString);
+        if (Equals(value, null))
+        {
+            throw new NoNullAllowedException($"{fileName} deserialization result is null");
+        }
+
+        return value;
     }
     public static void SaveToFile<T>(T content, string filePath)
     {
@@ -318,19 +316,24 @@ public class JsonFiles
         catch (DirectoryNotFoundException)
         {
             Directory.CreateDirectory(filePath.Remove(filePath.LastIndexOf("/")));
-            SaveToFile<T>(content, filePath);
+            SaveToFile(content, filePath);
         }
     }
     
     
     public static List<Object> LoadObjectsFromFile(string? filePath = null)
     {
-        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        if (Equals(filePath, null))   //Ask the file path if it is not gived in parameters
         {Console.WriteLine("Enter the json file contening your objects:\n"); filePath = Console.ReadLine();}
-        
-        Console.WriteLine(filePath);
-        List<Dictionary<string, object>> construtors =  LoadFromFile<List<Dictionary<string, object>>>(filePath);
 
+        if (!File.Exists(filePath) || Equals(filePath, null))
+        { throw new FileNotFoundException($"{filePath} is not found or is null.");}
+        
+        List<Dictionary<string, object>>? construtors =  LoadFromFile<List<Dictionary<string, object>>>(filePath);
+
+        if (Equals(construtors, null))
+        { throw new NullReferenceException($"Constructors in {filePath} are nulls");}
+        
         List<Object> objects = new List<Object>();
         foreach (var dic in construtors)
         {
@@ -344,7 +347,9 @@ public class JsonFiles
     {
         if (filePath == null)   //Ask the file path if it is not gived in parameters
         {Console.WriteLine("Enter the file directory to save objects:\n"); filePath = Console.ReadLine();}
-        
+
+        if (filePath == null)
+        { throw new NullReferenceException("Invalid file path");}
         
         List<Dictionary<string, object>> construtors = new();
 
@@ -353,7 +358,7 @@ public class JsonFiles
             construtors.Add(obj.ToConstructorDictionary());
         }
         
-        JsonFiles.SaveToFile(construtors, filePath);
+        SaveToFile(construtors, filePath);
     }
 
     public static void SaveEnvToFile(Env env, string? filePath = null)
@@ -361,17 +366,15 @@ public class JsonFiles
         if (filePath == null)   //Ask the file path if it is not gived in parameters
         {Console.WriteLine("Enter the save file directory to save environment:\n"); filePath = Console.ReadLine();}
 
+        if (filePath == null)
+        { throw new NullReferenceException("Invalid file path");}
         
-        Dictionary<string, object> envConstructor = new();
+        Dictionary<string, object> envConstructor = new ();
         envConstructor["name"] = env.Name;
         envConstructor["GravitationalConstant"] = env.GravitationalConstant;
         envConstructor["AirResistance"] = env.AirResistance;
 
-        if (env.Objects == null)
-        {
-            envConstructor["objects"] = "null";
-        }
-        else if (env.Objects.Count > 0)
+        if (env.Objects.Count > 0)
         {
             envConstructor["objects"] = $"Objects-{filePath}";
             SaveObjectsToFile(env.Objects,$"Objects-{filePath}");
@@ -390,16 +393,18 @@ public class JsonFiles
         if (filePath == null)   //Ask the file path if it is not gived in parameters
         {Console.WriteLine("Enter the json file contening your environment:\n"); filePath = Console.ReadLine();}
 
-        Dictionary<string, object> envConstructor = LoadFromFile<Dictionary<string, object>>(filePath);
+        if (filePath == null)
+        { throw new NullReferenceException("Invalid file path");}
+        
+        Dictionary<string, object>? envConstructor = LoadFromFile<Dictionary<string, object>>(filePath);
         List<Object> objects;
+        
+        if (Equals(envConstructor, null))
+        { throw new NullReferenceException($"Constructors in {filePath} are nulls");}
         
         if (envConstructor.ContainsKey("objects"))
         {
-            if ((string)envConstructor["objects"] == "null")
-            {
-                objects = null;
-            }
-            else if ((string)envConstructor["objects"] == "new")
+            if ((string)envConstructor["objects"] == "new")
             {
                 objects = new List<Object>();
             }
@@ -422,9 +427,9 @@ public class JsonFiles
         }
         
 
-        foreach (var Value in envConstructor)
+        foreach (var keyPair in envConstructor)
         {
-            Console.WriteLine(Value.Key + "=" + Value.Value);
+            Console.WriteLine(keyPair.Key + "=" + keyPair.Value);
         }
         
         Env env = new((string)envConstructor["name"], (double)envConstructor["GravitationalConstant"],

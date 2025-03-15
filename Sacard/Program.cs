@@ -1,4 +1,4 @@
-﻿using System;
+﻿
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -11,15 +11,14 @@ namespace Sacard;
 class Program
 {
     //first Triangle shape points list
-    public static List<Object> ListX =
+    private static readonly List<Object> ListX =
     [
         new(new(150, 200), 15, 1E12, Vector2.Zero, Vector2.Zero, Color.Blue),
         new(new(-150, 200), 15, 1E12, Vector2.Zero, Vector2.Zero, Color.Blue),
         new(new(0, -200), 15, 1E12, Vector2.Zero, Vector2.Zero, Color.Blue)
     ];
-    
     //second
-    public static List<Object> ListY =
+    private static readonly List<Object> ListY =
     [
         new(new(250, 300), 1, 10000, Vector2.Zero, Vector2.Zero, Color.Blue),
         new(new(-250, 300), 1, 10000, Vector2.Zero, Vector2.Zero, Color.Blue),
@@ -27,18 +26,18 @@ class Program
     ];
 
     //Line
-    public static List<Object> ListZ =
+    private static readonly List<Object> ListZ =
     [
         new(new(200, 0), 10, 1E8, new (0, 0.1), Vector2.Zero, Color.Green),
         new(new(-100, 0), 20, 1E12, Vector2.Zero, Vector2.Zero, Color.Red),
     ];
     //Dual Orbital
-    public static List<Object> ListA =
+    private static readonly List<Object> ListA =
     [
         new(new(100, 5), 18, 1E12, new (0, 0.4), Vector2.Zero, Color.Violet),
         new(new(-100, 5), 18, 1E12, new(0, -0.4), Vector2.Zero, Color.Magenta),
     ];
-    //Orbital Earth/Moon
+    //Orbital Earth/Moon    -- not finished
     public static List<Object> Earth =
     [
         //Earth - 1km = X * 1000000 / 2000
@@ -46,7 +45,7 @@ class Program
         new(new (0.4055E6, 0), 10, 0.07346E24, new(0, 1.082), new(0, 0), Color.DarkGray)
     ];
 
-    private static Env? environement;
+    private static Env environement = new ("Null env", 0, 0, new ());
     public static void Main(string[] args)
     {
         Console.WriteLine();
@@ -62,6 +61,11 @@ class Program
             Init();
         }
 
+        
+        //Start the program with the specified configuration
+        Dictionary<string, string> config = JsonFiles.LoadFromFile<Dictionary<string, string>>("config.json");
+        
+        
         if (args.Contains("config"))
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -86,51 +90,57 @@ class Program
             
             return;
         }
-        
-        
-        //Start the program with the specified configuration
-        Dictionary<string, string> config = JsonFiles.LoadFromFile<Dictionary<string, string>>("config.json");
+
+        if (args.Contains("--i-all"))
+        {
+            config["useDefaultEnvironment"] = config["useDefaultEnvironment"] == "true" ? "false" : "true";
+            config["useDefaultObjects"] = config["useDefaultObjects"] == "true" ? "false" : "true";
+        }
+        else if (args.Contains("--i-env"))
+        {
+            config["useDefaultEnvironment"] = config["useDefaultEnvironment"] == "true" ? "false" : "true";
+        }
+        else if (args.Contains("--i-objs"))
+        {
+            config["useDefaultObjects"] = config["useDefaultObjects"] == "true" ? "false" : "true";
+        }
         
             //Env configuration
-        if (args.Contains("-e"))
+        if (args.Contains("-env"))
         {
-            if (args.Length <= args.ToList().IndexOf("-e") +1)
+            if (args.Length <= args.ToList().IndexOf("-env") +1)
             {
-                throw new ArgumentException("Argument -e must be followed by the environment file path.");
+                throw new ArgumentException("Argument -env must be followed by the environment file path.");
             }
             environement = JsonFiles.LoadEnvFromFile(args[args.ToList().IndexOf("-e") + 1]);
         }
         else if (config["useDefaultEnvironment"] == "true")
         {
-            Console.WriteLine("DefEnv: True - " + config["defaultEnvironment"]);
             environement = JsonFiles.LoadEnvFromFile(config["defaultEnvironment"]);
         }
         else
         {
-            Console.WriteLine("DefEnv: False");
             Console.WriteLine("\nEnter a environment file path:");
             environement = JsonFiles.LoadEnvFromFile(Console.ReadLine());
         }
         
             //Objects configuration
-        List<Object> objs = new();
-        if (args.Contains("-o"))
+        List<Object> objs;
+        if (args.Contains("-objs"))
         {
-            if (args.Length <= args.ToList().IndexOf("-o") + 1)
+            if (args.Length <= args.ToList().IndexOf("-objs") + 1)
             {
-                throw new ArgumentException("Argument -o must be followed by the objects file path.");
+                throw new ArgumentException("Argument -objs must be followed by the objects file path.");
             }
 
             objs = JsonFiles.LoadObjectsFromFile(args[args.ToList().IndexOf("-o") + 1]);
         }
         else if (config["useDefaultObjects"] == "true")
         {
-            Console.WriteLine("DefObjs: True");
             objs = JsonFiles.LoadObjectsFromFile(config["defaultObjects"]);
         }
         else
         {
-            Console.WriteLine("DefEnv: False");
             Console.WriteLine("\nEnter a objects file path:");
             objs = JsonFiles.LoadObjectsFromFile(Console.ReadLine());
         }
@@ -141,7 +151,7 @@ class Program
 
     public static void Init()
     {
-        JsonFiles.SaveEnvToFile(new ("Default Environment", 6.67E-11, 0, new(), false), "init/space.env");
+        JsonFiles.SaveEnvToFile(new ("Default Environment", 6.67E-11, 0, new()), "init/space.env");
         JsonFiles.SaveObjectsToFile(ListX, "init/ListX.objs");
         JsonFiles.SaveObjectsToFile(ListY, "init/ListY.objs");
         JsonFiles.SaveObjectsToFile(ListZ, "init/ListZ.objs");

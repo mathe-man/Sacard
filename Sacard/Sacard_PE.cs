@@ -12,7 +12,7 @@ public class Env
     public List<Object> Objects;
     
 
-    public Env(string name, double gravitationalConstant, double airResistance, List<Object> objects, bool collision = false)
+    public Env(string name, double gravitationalConstant, double airResistance, List<Object> objects)
     {
         
         Name = name;
@@ -22,12 +22,12 @@ public class Env
         Objects = objects == null ? new List<Object>() : objects;
         
         
-        Console.WriteLine($"Environment '{Name}' initialized with G={GravitationalConstant}, AirResistance={AirResistance}, and {Objects.Count} objects");
+        //Console.WriteLine($"Environment '{Name}' initialized with G={GravitationalConstant}, AirResistance={AirResistance}, and {Objects.Count} objects");
     }
     
     
     //Update every object in the env and return the actual list 
-    public List<Object> Update(Action<Object> debugAction = null)
+    public List<Object> Update()
     {
         //Calculate the force and the velocity of each objects
         
