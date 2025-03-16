@@ -2,7 +2,6 @@
 using System.Data;
 using Raylib_cs;
 using Newtonsoft.Json;
-using JsonException = System.Text.Json.JsonException;
 
 namespace Sacard;
 
@@ -213,7 +212,7 @@ public class Object
         if (radius == 0 || mass == 0)
         {
             throw new ArgumentException(
-                $"Radius and Mass can't be 0, it will cause critical error in Velocity and Force calculations.\nYou can use 1 instead");
+                "Radius and Mass can't be 0, it will cause critical error in Velocity and Force calculations.\nYou can use 1 instead");
         }
         
         Position = new (x, y);
@@ -228,11 +227,7 @@ public class Object
     public Object(Dictionary<string, object> constructorDictionary)
     {
         Dictionary<string, object> cd = constructorDictionary; //Give a shorter name
-        foreach (var key in cd.Keys)
-        {
-            Console.Write($"|{key}:{cd[key]}|");
-        }
-        Console.WriteLine("");
+        
         Position = new((double)cd["x"],          (double)cd["y"]);
         Velocity = new((double)cd["velocity_x"], (double)cd["velocity_y"]);
         Force    = new((double)cd["force_x"],    (double)cd["force_y"]);
@@ -285,12 +280,12 @@ public class JsonFiles
     public static T LoadFromFile<T>(string fileName)
     {
         // Read the file content to a variable
-        string jsonString = File.ReadAllText(fileName);
+        string jsonString = File.ReadAllText("Sacard Files/" + fileName);
         // Deserialize the content
         T? value = JsonConvert.DeserializeObject<T>(jsonString);
         if (Equals(value, null))
         {
-            throw new NoNullAllowedException($"{fileName} deserialization result is null");
+            throw new NoNullAllowedException($"{fileName} deserialization result is null (result:{value})");
         }
 
         return value;
@@ -299,24 +294,34 @@ public class JsonFiles
     {
         try
         {
-            if (File.Exists(filePath))  //Only appen when the file is already existent
+            if (File.Exists("Sacard Files/" + filePath))  //Only appen when the file is already existent
             {
                 // Serialize the content into Json format
                 string jsonString = JsonConvert.SerializeObject(content, Formatting.Indented);
                 // Write the json formated content in the specified file
-                File.WriteAllText(filePath, jsonString);
+                File.WriteAllText("Sacard Files/" + filePath, jsonString);
             }
             else                        // if the file doesn't exist, it will be created and the function are recalled
             {
-                FileStream fs = File.Create(filePath);
+                Console.WriteLine($"File {filePath} don't exist");
+                FileStream fs = File.Create("Sacard Files/" + filePath);
                 fs.Close();
                 SaveToFile(content, filePath);
             }
         }
         catch (DirectoryNotFoundException)
         {
-            Directory.CreateDirectory(filePath.Remove(filePath.LastIndexOf("/")));
-            SaveToFile(content, filePath);
+            if (!Directory.Exists("Sacard Files"))
+            {
+                Directory.CreateDirectory("Sacard Files");
+                SaveToFile(content, filePath);
+            }
+            else
+            {
+                Directory.CreateDirectory("Sacard Files/" + filePath.Remove(filePath.LastIndexOf("/")));
+                SaveToFile(content, filePath);
+            }
+
         }
     }
     
@@ -326,8 +331,8 @@ public class JsonFiles
         if (Equals(filePath, null))   //Ask the file path if it is not gived in parameters
         {Console.WriteLine("Enter the json file contening your objects:\n"); filePath = Console.ReadLine();}
 
-        if (!File.Exists(filePath) || Equals(filePath, null))
-        { throw new FileNotFoundException($"{filePath} is not found or is null.");}
+        if (Equals(filePath, null))     //throw a new exception if it still null
+        { throw new FileNotFoundException($"{filePath} is null(got: {filePath}.");}
         
         List<Dictionary<string, object>>? construtors =  LoadFromFile<List<Dictionary<string, object>>>(filePath);
 
@@ -373,17 +378,7 @@ public class JsonFiles
         envConstructor["name"] = env.Name;
         envConstructor["GravitationalConstant"] = env.GravitationalConstant;
         envConstructor["AirResistance"] = env.AirResistance;
-
-        if (env.Objects.Count > 0)
-        {
-            envConstructor["objects"] = $"Objects-{filePath}";
-            SaveObjectsToFile(env.Objects,$"Objects-{filePath}");
-        }
-        else
-        {
-            envConstructor["objects"] = "new";
-        }
-
+        
         
         SaveToFile(envConstructor, filePath);
     }
@@ -397,43 +392,19 @@ public class JsonFiles
         { throw new NullReferenceException("Invalid file path");}
         
         Dictionary<string, object>? envConstructor = LoadFromFile<Dictionary<string, object>>(filePath);
-        List<Object> objects;
+        
         
         if (Equals(envConstructor, null))
         { throw new NullReferenceException($"Constructors in {filePath} are nulls");}
         
-        if (envConstructor.ContainsKey("objects"))
-        {
-            if ((string)envConstructor["objects"] == "new")
-            {
-                objects = new List<Object>();
-            }
-            else if (File.Exists((string)envConstructor["objects"]))
-            {
-                objects = LoadObjectsFromFile();
-            }
-            else if (!File.Exists((string)envConstructor["objects"]))
-            {
-                throw new FileNotFoundException($"File {(string)envConstructor["objects"]} not found.");
-            }
-            else
-            {
-                throw new JsonException($"Environment file doesn't specifie the 'objects' property correctly.");
-            }
-        }
-        else
-        {
-            throw new KeyNotFoundException($"File {(string)envConstructor["objects"]} doesn't contain the 'objects' property which is requiered.");
-        }
-        
-
+        Console.WriteLine("Environment information's");
         foreach (var keyPair in envConstructor)
         {
-            Console.WriteLine(keyPair.Key + "=" + keyPair.Value);
+            Console.WriteLine(keyPair.Key + " = " + keyPair.Value);
         }
         
         Env env = new((string)envConstructor["name"], (double)envConstructor["GravitationalConstant"],
-            (double)envConstructor["AirResistance"], objects);
+            (double)envConstructor["AirResistance"], new ());
         return env;
     }
     

@@ -13,29 +13,29 @@ class Program
     //first Triangle shape points list
     private static readonly List<Object> ListX =
     [
-        new(new(150, 200), 15, 1E12, Vector2.Zero, Vector2.Zero, Color.Blue),
-        new(new(-150, 200), 15, 1E12, Vector2.Zero, Vector2.Zero, Color.Blue),
-        new(new(0, -200), 15, 1E12, Vector2.Zero, Vector2.Zero, Color.Blue)
+        new(new(150, 200), 15, 1e12, Vector2.Zero, Vector2.Zero, Color.Blue),
+        new(new(-150, 200), 15, 1e12, Vector2.Zero, Vector2.Zero, Color.Blue),
+        new(new(0, -200), 15, 1e12, Vector2.Zero, Vector2.Zero, Color.Blue)
     ];
     //second
     private static readonly List<Object> ListY =
     [
-        new(new(250, 300), 1, 10000, Vector2.Zero, Vector2.Zero, Color.Blue),
-        new(new(-250, 300), 1, 10000, Vector2.Zero, Vector2.Zero, Color.Blue),
-        new(new(0, -300), 1, 100000, Vector2.Zero, Vector2.Zero, Color.Blue)
+        new(new(250, 100), 10, 1e11, Vector2.Zero, Vector2.Zero, Color.Blue),
+        new(new(-250, 100), 10, 1e11, Vector2.Zero, Vector2.Zero, Color.Blue),
+        new(new(0, -100), 10, 1e11, Vector2.Zero, Vector2.Zero, Color.Blue)
     ];
 
     //Line
     private static readonly List<Object> ListZ =
     [
-        new(new(200, 0), 10, 1E8, new (0, 0.1), Vector2.Zero, Color.Green),
-        new(new(-100, 0), 20, 1E12, Vector2.Zero, Vector2.Zero, Color.Red),
+        new(new(200, 0), 10, 1e8, new (0, 0.1), Vector2.Zero, Color.Green),
+        new(new(-100, 0), 20, 1e12, Vector2.Zero, Vector2.Zero, Color.Red),
     ];
     //Dual Orbital
     private static readonly List<Object> ListA =
     [
-        new(new(100, 5), 18, 1E12, new (0, 0.4), Vector2.Zero, Color.Violet),
-        new(new(-100, 5), 18, 1E12, new(0, -0.4), Vector2.Zero, Color.Magenta),
+        new(new(100, 5), 18, 1e12, new (0, 0.4), Vector2.Zero, Color.Violet),
+        new(new(-100, 5), 18, 1e12, new(0, -0.4), Vector2.Zero, Color.Magenta),
     ];
     //Orbital Earth/Moon    -- not finished
     public static List<Object> Earth =
@@ -50,7 +50,7 @@ class Program
     {
         Console.WriteLine();
         //Config verification
-        if (!File.Exists("config.json"))
+        if (!File.Exists("Sacard Files/config.json"))
         {
             Console.WriteLine("config.json: not found");
             Init();
@@ -60,7 +60,8 @@ class Program
             Console.WriteLine("config.json: not initied");
             Init();
         }
-
+        else if (args.Contains("-init"))
+        {Init();}
         
         //Start the program with the specified configuration
         Dictionary<string, string> config = JsonFiles.LoadFromFile<Dictionary<string, string>>("config.json");
@@ -112,7 +113,7 @@ class Program
             {
                 throw new ArgumentException("Argument -env must be followed by the environment file path.");
             }
-            environement = JsonFiles.LoadEnvFromFile(args[args.ToList().IndexOf("-e") + 1]);
+            environement = JsonFiles.LoadEnvFromFile(args[args.ToList().IndexOf("-env") + 1]);
         }
         else if (config["useDefaultEnvironment"] == "true")
         {
@@ -133,7 +134,7 @@ class Program
                 throw new ArgumentException("Argument -objs must be followed by the objects file path.");
             }
 
-            objs = JsonFiles.LoadObjectsFromFile(args[args.ToList().IndexOf("-o") + 1]);
+            objs = JsonFiles.LoadObjectsFromFile(args[args.ToList().IndexOf("-objs") + 1]);
         }
         else if (config["useDefaultObjects"] == "true")
         {
@@ -149,25 +150,25 @@ class Program
         Sacard_Interface();
     }
 
-    public static void Init()
+    private static void Init()
     {
-        JsonFiles.SaveEnvToFile(new ("Default Environment", 6.67E-11, 0, new()), "init/space.env");
-        JsonFiles.SaveObjectsToFile(ListX, "init/ListX.objs");
-        JsonFiles.SaveObjectsToFile(ListY, "init/ListY.objs");
-        JsonFiles.SaveObjectsToFile(ListZ, "init/ListZ.objs");
-        JsonFiles.SaveObjectsToFile(ListA, "init/ListA.objs");
+        JsonFiles.SaveEnvToFile(new ("Default Environment", 6.67e-11, 0, new()), "space.env");
+        JsonFiles.SaveObjectsToFile(ListX, "ListX.objs");
+        JsonFiles.SaveObjectsToFile(ListY, "ListY.objs");
+        JsonFiles.SaveObjectsToFile(ListZ, "ListZ.objs");
+        JsonFiles.SaveObjectsToFile(ListA, "ListA.objs");
         
-        if(!Directory.Exists("objects"))
-        {Directory.CreateDirectory("objects");}
-        if(!Directory.Exists("environments"))
-        {Directory.CreateDirectory("environment");}
+        if(!Directory.Exists("Sacard Files/objects"))
+        {Directory.CreateDirectory("Sacard Files/objects");}
+        if(!Directory.Exists("Sacard Files/environments"))
+        {Directory.CreateDirectory("Sacard Files/environment");}
         
         Dictionary<string, string> defaultConfig = new();
         defaultConfig["asInitied"] = "true";
         defaultConfig["useDefaultEnvironment"] = "true";
         defaultConfig["useDefaultObjects"] = "true";
-        defaultConfig["defaultEnvironment"] = "init/space.env";
-        defaultConfig["defaultObjects"] = "init/ListA.objs";
+        defaultConfig["defaultEnvironment"] = "space.env";
+        defaultConfig["defaultObjects"] = "ListA.objs";
         
         JsonFiles.SaveToFile(defaultConfig, "config.json");
         
@@ -175,20 +176,7 @@ class Program
         
     }
 
-
-    public static void DebugGravitation()
-    {
-        
-        foreach (Object obj in environement.Update())
-        {
-            Console.WriteLine(obj.ToString());
-            Console.WriteLine(environement.Objects.IndexOf(obj));
-        }
-        //Console.ReadKey();
-        
-    }
-    
-    public static void Sacard_Interface()
+    private static void Sacard_Interface()
     {
         SacardDrawer.Init(720, 500, 60, "Drawer", true);
         
@@ -205,7 +193,6 @@ class Program
         foreach (Object obj in environement.Update())
         {
             SacardDrawer.objects.Add(obj);
-            //SacardDrawer.objects.Add(new (obj.Position / 1000000, obj.Radius, obj.Mass, obj.Velocity, obj.Force, obj.Color));
         }
         
 
