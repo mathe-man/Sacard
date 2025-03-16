@@ -1,4 +1,5 @@
 ﻿
+using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -8,7 +9,7 @@ using Raylib_cs;
 namespace Sacard;
 
 // The Debug/Use entry point
-class Program
+internal static class Program
 {
     //first Triangle shape points list
     private static readonly List<Object> ListX =
@@ -50,7 +51,7 @@ class Program
     {
         Console.WriteLine();
         //Config verification
-        if (!File.Exists("Sacard Files/config.json"))
+        if (!File.Exists("SacardGline Files/config.json"))
         {
             Console.WriteLine("config.json: not found");
             Init();
@@ -158,10 +159,10 @@ class Program
         JsonFiles.SaveObjectsToFile(ListZ, "ListZ.objs");
         JsonFiles.SaveObjectsToFile(ListA, "ListA.objs");
         
-        if(!Directory.Exists("Sacard Files/objects"))
-        {Directory.CreateDirectory("Sacard Files/objects");}
-        if(!Directory.Exists("Sacard Files/environments"))
-        {Directory.CreateDirectory("Sacard Files/environment");}
+        if(!Directory.Exists("SacardGline Files/objects"))
+        {Directory.CreateDirectory("SacardGline Files/objects");}
+        if(!Directory.Exists("SacardGline Files/environments"))
+        {Directory.CreateDirectory("SacardGline Files/environment");}
         
         Dictionary<string, string> defaultConfig = new();
         defaultConfig["asInitied"] = "true";
@@ -172,7 +173,7 @@ class Program
         
         JsonFiles.SaveToFile(defaultConfig, "config.json");
         
-        Console.WriteLine("---Sacard as been initied correctly---\n\n");
+        Console.WriteLine("---SacardGline as been initied correctly---\n\n");
         
     }
 
@@ -202,3 +203,140 @@ class Program
 
 }
 
+
+
+public class JsonFiles
+{
+    //Basic json de/serialisation and load/save
+    public static T LoadFromFile<T>(string fileName)
+    {
+        // Read the file content to a variable
+        string jsonString = File.ReadAllText("SacardGline Files/" + fileName);
+        // Deserialize the content
+        T? value = JsonConvert.DeserializeObject<T>(jsonString);
+        if (Equals(value, null))
+        {
+            throw new NullReferenceException($"{fileName} deserialization result is null (result:{value})");
+        }
+
+        return value;
+    }
+    public static void SaveToFile<T>(T content, string filePath)
+    {
+        try
+        {
+            if (File.Exists("SacardGline Files/" + filePath))  //Only append when the file is already existent
+            {
+                // Serialize the content into Json format
+                string jsonString = JsonConvert.SerializeObject(content, Formatting.Indented);
+                // Write the json formated content in the specified file
+                File.WriteAllText("SacardGline Files/" + filePath, jsonString);
+            }
+            else                        // if the file doesn't exist, it will be created and the function are recalled
+            {
+                Console.WriteLine($"File {filePath} don't exist");
+                FileStream fs = File.Create("SacardGline Files/" + filePath);
+                fs.Close();
+                SaveToFile(content, filePath);
+            }
+        }
+        catch (DirectoryNotFoundException)
+        {
+            if (!Directory.Exists("SacardGline Files"))
+            {
+                Directory.CreateDirectory("SacardGline Files");
+                SaveToFile(content, filePath);
+            }
+            else
+            {
+                Directory.CreateDirectory("SacardGline Files/" + filePath.Remove(filePath.LastIndexOf("/")));
+                SaveToFile(content, filePath);
+            }
+
+        }
+    }
+    
+    
+    public static List<Object> LoadObjectsFromFile(string? filePath = null)
+    {
+        if (Equals(filePath, null))   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the json file contening your objects:\n"); filePath = Console.ReadLine();}
+
+        if (Equals(filePath, null))     //throw a new exception if it still null
+        { throw new FileNotFoundException($"{filePath} is null(got: {filePath}.");}
+        
+        List<Dictionary<string, object>>? construtors =  LoadFromFile<List<Dictionary<string, object>>>(filePath);
+
+        if (Equals(construtors, null))
+        { throw new NullReferenceException($"Constructors in {filePath} are nulls");}
+        
+        List<Object> objects = new List<Object>();
+        foreach (var dic in construtors)
+        {
+            objects.Add(new Object(dic));
+        }
+        
+        return objects;
+    }
+
+    public static void SaveObjectsToFile(List<Object> objectList, string? filePath = null)
+    {
+        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the file directory to save objects:\n"); filePath = Console.ReadLine();}
+
+        if (filePath == null)
+        { throw new NullReferenceException("Invalid file path");}
+        
+        List<Dictionary<string, object>> construtors = new();
+
+        foreach (var obj in objectList)
+        {
+            construtors.Add(obj.ToConstructorDictionary());
+        }
+        
+        SaveToFile(construtors, filePath);
+    }
+
+    public static void SaveEnvToFile(Env env, string? filePath = null)
+    {
+        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the save file directory to save environment:\n"); filePath = Console.ReadLine();}
+
+        if (filePath == null)
+        { throw new NullReferenceException("Invalid file path");}
+        
+        Dictionary<string, object> envConstructor = new ();
+        envConstructor["name"] = env.Name;
+        envConstructor["GravitationalConstant"] = env.GravitationalConstant;
+        envConstructor["AirResistance"] = env.AirResistance;
+        
+        
+        SaveToFile(envConstructor, filePath);
+    }
+
+    public static Env LoadEnvFromFile(string? filePath = null)
+    {
+        if (filePath == null)   //Ask the file path if it is not gived in parameters
+        {Console.WriteLine("Enter the json file contening your environment:\n"); filePath = Console.ReadLine();}
+
+        if (filePath == null)
+        { throw new NullReferenceException("Invalid file path");}
+        
+        Dictionary<string, object>? envConstructor = LoadFromFile<Dictionary<string, object>>(filePath);
+        
+        
+        if (Equals(envConstructor, null))
+        { throw new NullReferenceException($"Constructors in {filePath} are nulls");}
+        
+        Console.WriteLine("Environment information's");
+        foreach (var keyPair in envConstructor)
+        {
+            Console.WriteLine(keyPair.Key + " = " + keyPair.Value);
+        }
+        
+        Env env = new((string)envConstructor["name"], (double)envConstructor["GravitationalConstant"],
+            (double)envConstructor["AirResistance"], new ());
+        return env;
+    }
+    
+}

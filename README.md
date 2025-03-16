@@ -68,6 +68,7 @@ Specify the environment and objects file path to use as default.
 
 ## Bug
 List of the bugs to fix <br>
-- [ ] Program doesn't launch by double-click when he should ask the user for path (Objects and env).
-- [ ] Calculation error when objects are in the exact same position.
-- [x] Collision bug
+- [Fixed?] Name: Description
+- [ ] Terminal Only: Program doesn't launch by double-click when he should ask the user for path (Objects and env).
+- [ ] Ultra speed: Calculation error when objects are in the exact same position.
+- [x] Collision bug.

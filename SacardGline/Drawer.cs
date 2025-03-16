@@ -6,7 +6,7 @@ public static class SacardDrawer
 {
     public static List<Object> objects = new List<Object>();
     
-    public static string Title = "Sacard Drawer";
+    public static string Title = "SacardGline Drawer";
     public static bool DisplayInfo = false;
 
     public static List<Action> FirstLoopAction = new ();
@@ -15,7 +15,7 @@ public static class SacardDrawer
 
     
 
-    public static void Init(int width, int height, int fpsRate = 60, string title = "Sacard Drawer", bool displayInfo = false)
+    public static void Init(int width, int height, int fpsRate = 60, string title = "SacardGline Drawer", bool displayInfo = false)
     {
         Raylib.InitWindow(width, height, title);
         Raylib.SetTargetFPS(fpsRate);
