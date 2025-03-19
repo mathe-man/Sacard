@@ -1,0 +1,23 @@
+#project's git shell script
+
+case $1 in
+  commit)     #Will commit with the gived name
+    if [ -n "$2" ]; then
+        git add .
+        git commit -m "$2"
+    else
+        echo "No commit name !"
+    fi
+    ;;
+  
+  push)       #will push to the remote
+    git push origin main
+    ;;
+  send)        #Commit first and the push
+    ./project commit $2
+    ./project push
+    ;;
+esac
+    
+    
+
